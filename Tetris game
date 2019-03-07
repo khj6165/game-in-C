@@ -1,0 +1,424 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <windows.h>
+#include <time.h>
+
+int dy=2, dx=4;
+int map[20][10] = {
+ 1,1,1,1,1,1,1,1,1,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,0,0,0,0,0,0,0,0,1,
+ 1,1,1,1,1,1,1,1,1,1
+};
+
+int block[4][4] = {
+ 1,1,1,0,
+ 0,0,1,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+
+int block2[4][4] = {
+ 1,1,1,1,
+ 0,0,0,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+
+int block3[4][4] = {
+ 1,1,1,0,
+ 0,0,1,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+
+int block4[4][4] = {
+ 1,1,0,0,
+ 0,1,1,0,
+ 0,0,0,0,
+ 0,0,0,0,
+};
+
+int block5[4][4] = {
+ 1,1,0,0,
+ 1,1,0,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+
+int block6[4][4] = {
+ 1,1,1,0,
+ 1,0,0,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+
+int block7[4][4] = {
+ 0,1,0,0,
+ 1,1,1,0,
+ 0,0,0,0,
+ 0,0,0,0
+};
+int result[4][4] = {};
+
+int ddang[4][4] = {};
+
+void spin()
+{
+ int x, y;
+ int dx, dy;
+
+ for (y = 0; y < 4; y++)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   result[y][x] = 0;
+  }
+ }
+
+ for (y = 0; y < 4; y++)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   dy = x;
+   dx = 3 - y;
+   result[dy][dx] = block[y][x];
+  }
+ }
+}
+
+void dang()
+{
+ int x, y;
+ int dx=0, dy=0;
+ int minx = 99, miny = 99, maxx = 0, maxy = 0;
+
+ for (y = 0; y < 4; y++)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   ddang[y][x] = 0;
+  }
+ }
+
+ for (y = 0; y < 4; y++)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   if (result[y][x] == 1)
+   {
+    if (minx > x)minx = x;
+    if (miny > y)miny = y;
+    if (maxx < x)maxx = x;
+    if (maxy < y)maxy = y;
+   }
+  }
+ }
+ dy = 0;
+ for (y = miny; y <= maxy; y++)
+ {
+  dx = 0;
+  for (x = minx; x <= maxx; x++)
+  {
+   ddang[dy][dx] = result[y][x];
+   dx++;
+  }
+  dy++;
+ }
+}
+
+void copyAll()
+{
+ int x, y;
+
+ for (y = 0; y < 4; y++)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   block[y][x] = ddang[y][x];
+  }
+ }
+}
+
+void sspin()
+{
+ spin();
+ dang();
+ copyAll();
+}
+void gotoxy(int x, int y)
+{
+ COORD pos = { x,y };
+ SetConsoleCursorPosition(GetStdHandle(STD_OUTPUT_HANDLE), pos);
+}
+
+int IsPossibleToGo(int x, int y)
+{
+ int i,j;
+ 
+ for (i = 0; i < 4; i++)
+ {
+  for (j = 0; j < 4; j++)
+  {
+   if (block[i][j]==1&&map[y + i][x + j] ==1)
+   {
+    return 0;
+   }
+  }
+ }
+ return 1;
+}
+
+int IsPossibleToSpin()
+{
+ int i, j;
+ sspin();
+ if (IsPossibleToGo(dx,dy) == 1)
+ {
+  sspin();
+  sspin();
+  sspin();
+  return 1;
+ }
+ else
+ {
+  sspin();
+  sspin();
+  sspin();
+  return 0;
+ }
+}
+
+void printAll()
+{
+ system("cls");
+ int x, y;
+ 
+ for (x = 0; x < 20; x++)
+ {
+  for (y = 0; y < 10; y++)
+  {
+   if (map[x][y] == 0)
+    printf(" ");
+   else
+    printf("#");
+  }
+  printf("\n");
+ }
+
+ for (x = 0; x < 4; x++)
+ {
+  for (y = 0; y < 4; y++)
+  {
+   if (block[x][y] == 1)
+   {
+    gotoxy(dx+y,dy+x);
+    printf("#");
+   }
+  }
+ }
+}
+
+void IsFull()
+{
+ int x, y;
+ int count = 0;
+ int t;
+
+ for (y = 18; y >=1; y--)
+ {
+  count = 0;
+  for (x = 1; x < 9; x++)
+  {
+   if (map[y][x] == 1)
+   {
+    count++;
+   }
+  }
+  if (count == 8)//한줄발견
+  {
+   for (x = 1; x < 9; x++)//한줄지우기
+   {
+    map[y][x] = 0;
+   }
+
+   for (t = y; t >= 2; t--)//한줄씩 당기기
+   {
+    for (x = 1; x <= 8; x++)
+    {
+     map[t][x] = map[t - 1][x];
+    }
+   }
+
+   for (x = 1; x <= 8; x++)//맨윗줄 삭제
+   {
+    map[1][x] = 0;
+   }
+
+   y = 19;//2중for문 처음부터 다시
+  }
+ }
+ 
+}
+
+void Change()
+{
+ int x, y;
+ int d = rand() % 6;
+ 
+ if (d == 0)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block2[x][y];
+   }
+  }
+ }
+
+ if (d == 1)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block3[x][y];
+   }
+  }
+ }
+ if (d == 2)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block4[x][y];
+   }
+  }
+ }
+ if (d == 3)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block5[x][y];
+   }
+  }
+ }
+ if (d == 4)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block6[x][y];
+   }
+  }
+ }
+ if (d == 5)
+ {
+  for (x = 0; x < 4; x++)
+  {
+   for (y = 0; y < 4; y++)
+   {
+    block[x][y] = block7[x][y];
+   }
+  }
+ }
+ 
+}
+
+void CopyBlock(int a, int b)
+{
+ int x, y;
+ for (x = 0; x < 4; x++)
+ {
+  for (y = 0; y < 4; y++)
+  {
+   if (block[x][y] == 1)
+   {
+    map[x + b][y + a] = block[x][y];
+   }
+  }
+ }
+
+ IsFull();
+ dy = 2;
+ dx = 4; 
+ Change();
+}
+
+void Down()
+{
+ if (IsPossibleToGo(dx, dy + 1) == 1)
+ {
+  dy++;
+ }
+ else
+ {
+  CopyBlock(dx, dy);
+ }
+}
+
+int main()
+{
+ srand(time(NULL));
+ int t=0;
+
+ while (1)
+ {
+  if (GetAsyncKeyState(VK_UP) & 0x8001)
+  {
+   if (IsPossibleToSpin() == 1)
+   {
+    sspin();
+   }
+  }
+  if (GetAsyncKeyState(VK_DOWN) & 0x8001)
+  {
+   Down();
+  }
+  if (GetAsyncKeyState(VK_LEFT) & 0x8001)
+  {
+   if (IsPossibleToGo(dx -1, dy) == 1)
+   {
+    dx--;
+   }
+  }
+  if (GetAsyncKeyState(VK_RIGHT) & 0x8001)
+  {
+   if (IsPossibleToGo(dx+1,dy) == 1)
+   {
+    dx++;
+   }
+  }
+  printAll();
+  Sleep(25);
+  t++;
+  if (t == 3)
+  {
+   t = 0;
+   Down();
+  }
+ }
+
+ return 0;
+} 
